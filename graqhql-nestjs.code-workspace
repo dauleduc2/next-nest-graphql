@@ -1,0 +1,14 @@
+{
+  "folders": [
+    {
+      "path": "graphql-nextjs"
+    },
+    {
+      "path": "."
+    },
+    {
+      "path": "graphql-nestjs"
+    }
+  ],
+  "settings": {}
+}
