@@ -10,5 +10,7 @@
       "path": "graphql-nestjs"
     }
   ],
-  "settings": {}
+  "settings": {
+    "cSpell.words": ["dicebear"]
+  }
 }

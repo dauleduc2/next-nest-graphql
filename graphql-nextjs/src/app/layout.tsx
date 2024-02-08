@@ -1,7 +1,7 @@
 "use client";
 import ApolloProvider from "@/components/ApolloProvider";
-import createApolloClient from "../../apollo-client";
-
+import Header from "@/components/layouts/header";
+import "./global.css";
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -9,9 +9,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <ApolloProvider>
-        <body>{children}</body>
-      </ApolloProvider>
+      <body className="w-screen h-screen">
+        <ApolloProvider>
+          <div className="flex flex-col w-full h-full">
+            <Header />
+            <div className="flex-1 bg-gray-50 px-10 py-5">{children}</div>
+          </div>
+        </ApolloProvider>
+      </body>
     </html>
   );
 }
