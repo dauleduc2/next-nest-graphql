@@ -27,8 +27,10 @@ export class Task {
   title: string;
 
   @Field()
-  @Column()
-  description: string;
+  @Column({
+    nullable: true,
+  })
+  description?: string;
 
   @Field()
   @Column({
@@ -39,12 +41,16 @@ export class Task {
   status: TaskStatus;
 
   @Field()
-  @Column()
-  date: string;
+  @Column({
+    nullable: true,
+  })
+  date?: Date;
 
   @Field()
-  @Column()
-  time: string;
+  @Column({
+    nullable: true,
+  })
+  time?: number;
 
   @Field()
   @Column()

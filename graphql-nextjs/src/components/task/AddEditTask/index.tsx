@@ -9,14 +9,14 @@ import { TaskStatus } from "@/types/models/task";
 import { FormProvider, useForm } from "react-hook-form";
 import { joiResolver } from "@hookform/resolvers/joi";
 import { addEditTaskSchema } from "./schema";
+import { useCreateTask } from "@/hooks/task";
+import { AddEditTaskForm } from "@/types/request/task";
+import DateField from "@/components/form/date";
+import { toast } from "react-toastify";
 
-export interface AddEditTaskForm {
-  title: string;
-  description: string;
-  status: TaskStatus;
-}
-
-export type AddTaskModalProps = {};
+export type AddTaskModalProps = {
+  onSuccess?(): void;
+};
 
 export type AddTaskModalRef = {
   open(): void;
@@ -24,12 +24,13 @@ export type AddTaskModalRef = {
 };
 
 const AddTaskModal = forwardRef<AddTaskModalRef, AddTaskModalProps>(
-  (props, ref) => {
+  ({ onSuccess }, ref) => {
     const methods = useForm<AddEditTaskForm>({
       resolver: joiResolver(addEditTaskSchema),
     });
+    const [addTask, { loading }] = useCreateTask();
 
-    const [open, setOpen] = useState(true);
+    const [open, setOpen] = useState(false);
 
     useImperativeHandle(ref, () => ({
       open() {
@@ -40,8 +41,19 @@ const AddTaskModal = forwardRef<AddTaskModalRef, AddTaskModalProps>(
       },
     }));
 
-    const onSubmit = (data: AddEditTaskForm) => {
-      console.log(data);
+    const onSubmit = async (data: AddEditTaskForm) => {
+      const res = await addTask({
+        variables: data,
+      });
+
+      if (res.errors) {
+        toast.error(res.errors[0].message);
+        return;
+      }
+
+      setOpen(false);
+      toast.success("Task added successfully");
+      onSuccess?.();
     };
 
     const onCancel = () => {
@@ -127,6 +139,16 @@ const AddTaskModal = forwardRef<AddTaskModalRef, AddTaskModalProps>(
                                 }
                               />
                             </div>
+                          </div>
+                          <div className="flex gap-5">
+                            <div className="flex-1">
+                              <DateField label="Due date" name="date" />
+                            </div>
+                            <TextFieldC
+                              type="number"
+                              label="Time (hours)"
+                              name="time"
+                            />
                           </div>
                           <TextareaC label="Description" name="description" />
                         </div>

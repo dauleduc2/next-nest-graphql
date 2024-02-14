@@ -1,6 +1,9 @@
 "use client";
 import ApolloProvider from "@/components/ApolloProvider";
 import Header from "@/components/layouts/header";
+import { ToastContainer } from "react-toastify";
+
+import "react-toastify/dist/ReactToastify.css";
 import "./global.css";
 export default function RootLayout({
   children,
@@ -16,6 +19,18 @@ export default function RootLayout({
             <div className="flex-1 bg-gray-100 px-10 py-5">{children}</div>
           </div>
         </ApolloProvider>
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="colored"
+        />
       </body>
     </html>
   );

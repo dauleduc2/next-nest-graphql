@@ -7,8 +7,8 @@ type Task {
   title: String!
   description: String!
   status: String!
-  date: String!
-  time: String!
+  date: DateTime!
+  time: Float!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -32,14 +32,16 @@ type Mutation {
 input CreateTaskInput {
   title: String!
   description: String!
-  date: String!
-  time: String!
+  date: DateTime!
+  time: Float!
+  status: String!
 }
 
 input UpdateTaskInput {
   title: String
   description: String
-  date: String
-  time: String
+  date: DateTime
+  time: Float
+  status: String
   id: String!
 }

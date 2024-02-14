@@ -8,7 +8,7 @@ import { useMemo, useRef } from "react";
 
 export default function TasksPage() {
   const addTaskModalRef = useRef<AddTaskModalRef>(null);
-  const { loading, error, data } = useGetTasks({
+  const { loading, error, data, refetch } = useGetTasks({
     fields: ["id", "title", "description", "status"],
   });
 
@@ -51,7 +51,7 @@ export default function TasksPage() {
         <TaskSection title="In Progress" tasks={inProgressTasks} />
         <TaskSection title="Done" tasks={doneTasks} />
       </div>
-      <AddTaskModal ref={addTaskModalRef} />
+      <AddTaskModal ref={addTaskModalRef} onSuccess={refetch} />
     </div>
   );
 }

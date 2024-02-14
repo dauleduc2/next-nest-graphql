@@ -1,4 +1,5 @@
 import { InputType, Field } from '@nestjs/graphql';
+import { TaskStatus } from '../entities/task.entity';
 
 @InputType()
 export class CreateTaskInput {
@@ -9,8 +10,11 @@ export class CreateTaskInput {
   description: string;
 
   @Field()
-  date: string;
+  date: Date;
 
   @Field()
-  time: string;
+  time: number;
+
+  @Field()
+  status: TaskStatus;
 }
