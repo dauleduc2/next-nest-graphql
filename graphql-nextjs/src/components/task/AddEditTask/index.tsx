@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle } from "react";
+import { forwardRef, useEffect, useImperativeHandle } from "react";
 import { Fragment, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
@@ -9,29 +9,39 @@ import { TaskStatus } from "@/types/models/task";
 import { FormProvider, useForm } from "react-hook-form";
 import { joiResolver } from "@hookform/resolvers/joi";
 import { addEditTaskSchema } from "./schema";
-import { useCreateTask } from "@/hooks/task";
+import { useCreateTask, useGetTaskById, useUpdateTask } from "@/hooks/task";
 import { AddEditTaskForm } from "@/types/request/task";
 import DateField from "@/components/form/date";
 import { toast } from "react-toastify";
+import ButtonC from "@/components/Button";
 
-export type AddTaskModalProps = {
+export type AddEditTaskModalMode = "ADD" | "EDIT";
+
+export type AddEditTaskModalProps = {
   onSuccess?(): void;
+  mode: AddEditTaskModalMode;
+  id?: string;
 };
 
-export type AddTaskModalRef = {
+export type AddEditTaskModalRef = {
   open(): void;
   close(): void;
 };
 
-const AddTaskModal = forwardRef<AddTaskModalRef, AddTaskModalProps>(
-  ({ onSuccess }, ref) => {
+const AddEditTaskModal = forwardRef<AddEditTaskModalRef, AddEditTaskModalProps>(
+  ({ onSuccess, mode, id }, ref) => {
+    const isAddMode = mode === "ADD";
+    const { data: taskRes, loading: isGetTaskLoading } = useGetTaskById({
+      fields: ["id", "title", "description", "date", "time", "status"],
+      id,
+    });
     const methods = useForm<AddEditTaskForm>({
       resolver: joiResolver(addEditTaskSchema),
     });
-    const [addTask, { loading }] = useCreateTask();
-
+    const [addTask, { loading: isCreatingTask }] = useCreateTask();
+    const [updateTask, { loading: isUpdatingTask }] = useUpdateTask();
     const [open, setOpen] = useState(false);
-
+    const isLoading = isCreatingTask || isUpdatingTask || isGetTaskLoading;
     useImperativeHandle(ref, () => ({
       open() {
         setOpen(true);
@@ -41,7 +51,7 @@ const AddTaskModal = forwardRef<AddTaskModalRef, AddTaskModalProps>(
       },
     }));
 
-    const onSubmit = async (data: AddEditTaskForm) => {
+    const onAddTask = async (data: AddEditTaskForm) => {
       const res = await addTask({
         variables: data,
       });
@@ -51,18 +61,58 @@ const AddTaskModal = forwardRef<AddTaskModalRef, AddTaskModalProps>(
         return;
       }
 
-      setOpen(false);
       toast.success("Task added successfully");
+    };
+
+    const onEditTask = async (data: AddEditTaskForm) => {
+      if (!id) return;
+
+      const res = await updateTask({
+        variables: {
+          id: id,
+          ...data,
+        },
+      });
+
+      if (res.errors) {
+        toast.error(res.errors[0].message);
+        return;
+      }
+
+      toast.success("Task update successfully");
+    };
+
+    const onSubmit = async (data: AddEditTaskForm) => {
+      if (isAddMode) await onAddTask(data);
+      else await onEditTask(data);
+
+      clearAndCloseForm();
       onSuccess?.();
     };
 
-    const onCancel = () => {
+    const clearAndCloseForm = () => {
       setOpen(false);
+      setTimeout(() => {
+        methods.reset();
+      }, 500);
     };
+
+    useEffect(() => {
+      if (open && !isAddMode && taskRes?.task) {
+        methods.setValue("title", taskRes.task.title);
+        methods.setValue("description", taskRes.task.description);
+        methods.setValue(
+          "date",
+          new Date(taskRes.task.date).toISOString().split("T")[0]
+        );
+        methods.setValue("time", taskRes.task.time);
+        methods.setValue("status", taskRes.task.status);
+      }
+    }, [isAddMode, methods, open, taskRes]);
 
     return (
       <Transition.Root show={open} as={Fragment}>
-        <Dialog as="div" className="relative z-10" onClose={setOpen}>
+        <Dialog as="div" className="relative z-10" onClose={clearAndCloseForm}>
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
@@ -94,7 +144,7 @@ const AddTaskModal = forwardRef<AddTaskModalRef, AddTaskModalProps>(
                       <button
                         type="button"
                         className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                        onClick={() => setOpen(false)}
+                        onClick={clearAndCloseForm}
                       >
                         <span className="sr-only">Close</span>
                         <XMarkIcon className="h-6 w-6" aria-hidden="true" />
@@ -108,6 +158,7 @@ const AddTaskModal = forwardRef<AddTaskModalRef, AddTaskModalProps>(
                         >
                           Add new task
                         </Dialog.Title>
+
                         <div className="mt-2 flex flex-col gap-5 flex-1">
                           <div className="flex gap-5 justify-between items-center">
                             <div className="flex-1">
@@ -155,19 +206,16 @@ const AddTaskModal = forwardRef<AddTaskModalRef, AddTaskModalProps>(
                       </div>
                     </div>
                     <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-                      <button
-                        type="submit"
-                        className="inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 sm:ml-3 sm:w-auto"
-                      >
+                      <ButtonC isLoading={isLoading} type="submit">
                         Submit
-                      </button>
-                      <button
+                      </ButtonC>
+                      <ButtonC
                         type="button"
-                        onClick={onCancel}
+                        onClick={clearAndCloseForm}
                         className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
                       >
                         Cancel
-                      </button>
+                      </ButtonC>
                     </div>
                   </Dialog.Panel>
                 </Transition.Child>
@@ -180,6 +228,6 @@ const AddTaskModal = forwardRef<AddTaskModalRef, AddTaskModalProps>(
   }
 );
 
-AddTaskModal.displayName = "AddTaskModal";
+AddEditTaskModal.displayName = "AddEditTaskModal";
 
-export default AddTaskModal;
+export default AddEditTaskModal;

@@ -1,13 +1,18 @@
 "use client";
 
-import AddTaskModal, { AddTaskModalRef } from "@/components/task/AddEditTask";
+import AddEditTaskModal, {
+  AddEditTaskModalMode,
+  AddEditTaskModalRef,
+} from "@/components/task/AddEditTask";
 import TaskSection from "@/components/task/TaskSection";
 import { useGetTasks } from "@/hooks/task";
 import { PlusIcon } from "@heroicons/react/24/solid";
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 
 export default function TasksPage() {
-  const addTaskModalRef = useRef<AddTaskModalRef>(null);
+  const addTaskModalRef = useRef<AddEditTaskModalRef>(null);
+  const [modalMode, setModalMode] = useState<AddEditTaskModalMode>("ADD");
+  const [editingId, setEditingId] = useState<string | undefined>();
   const { loading, error, data, refetch } = useGetTasks({
     fields: ["id", "title", "description", "status"],
   });
@@ -28,6 +33,13 @@ export default function TasksPage() {
   );
 
   const openAddTaskModal = () => {
+    setModalMode("ADD");
+    addTaskModalRef.current?.open();
+  };
+
+  const openEditTaskModal = (id: string) => {
+    setModalMode("EDIT");
+    setEditingId(id);
     addTaskModalRef.current?.open();
   };
 
@@ -47,11 +59,28 @@ export default function TasksPage() {
         </button>
       </div>
       <div className="flex cursor-pointer gap-5">
-        <TaskSection title="To do" tasks={todoTasks} />
-        <TaskSection title="In Progress" tasks={inProgressTasks} />
-        <TaskSection title="Done" tasks={doneTasks} />
+        <TaskSection
+          title="To do"
+          tasks={todoTasks}
+          onEdit={openEditTaskModal}
+        />
+        <TaskSection
+          title="In Progress"
+          tasks={inProgressTasks}
+          onEdit={openEditTaskModal}
+        />
+        <TaskSection
+          title="Done"
+          tasks={doneTasks}
+          onEdit={openEditTaskModal}
+        />
       </div>
-      <AddTaskModal ref={addTaskModalRef} onSuccess={refetch} />
+      <AddEditTaskModal
+        id={editingId}
+        mode={modalMode}
+        ref={addTaskModalRef}
+        onSuccess={refetch}
+      />
     </div>
   );
 }

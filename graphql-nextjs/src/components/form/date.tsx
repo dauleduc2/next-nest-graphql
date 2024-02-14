@@ -1,4 +1,4 @@
-import { FunctionComponent, InputHTMLAttributes } from "react";
+import { FunctionComponent, InputHTMLAttributes, useMemo } from "react";
 import { useFormContext } from "react-hook-form";
 import FieldWrapper from "./fieldWrapper";
 
@@ -12,7 +12,8 @@ const DateField: FunctionComponent<DateFieldProps> = ({
   name,
   ...rest
 }) => {
-  const { register } = useFormContext();
+  const { register, getValues } = useFormContext();
+
   return (
     <FieldWrapper label={label} name={name}>
       <input

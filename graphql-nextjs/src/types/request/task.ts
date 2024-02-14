@@ -1,13 +1,8 @@
-import { TaskStatus } from "../models/task";
+import { Task, TaskStatus } from "../models/task";
 
-export interface AddEditTaskForm {
-  title: string;
-  description: string;
-  status: TaskStatus;
-  date: string;
-  time: number;
-}
+export interface AddEditTaskForm
+  extends Pick<Task, "title" | "description" | "status" | "date" | "time"> {}
 
-export interface AddTaskPayload {
-  createTaskInput: AddEditTaskForm;
-}
+export type AddTaskPayload = AddEditTaskForm;
+
+export type EditTaskPayload = AddEditTaskForm & { id: string };

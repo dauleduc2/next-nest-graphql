@@ -1,4 +1,4 @@
-import { FunctionComponent, useEffect, useState } from "react";
+import { FunctionComponent } from "react";
 import { useCreateAvatar } from "@/hooks/avatar";
 import clsx from "clsx";
 

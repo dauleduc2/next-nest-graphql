@@ -7,5 +7,5 @@ export type Task = BaseModel & {
   description: string;
   status: TaskStatus;
   date: string;
-  time: string;
+  time: number;
 };
