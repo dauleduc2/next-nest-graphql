@@ -1,8 +1,10 @@
-import { FunctionComponent, PropsWithChildren } from "react";
+import { FunctionComponent, HTMLAttributes, PropsWithChildren } from "react";
 
-const TaskCard: FunctionComponent<PropsWithChildren> = ({ children }) => {
+type TaskCardProps = PropsWithChildren & HTMLAttributes<HTMLDivElement> & {};
+
+const TaskCard: FunctionComponent<TaskCardProps> = ({ children, ...rest }) => {
   return (
-    <div className="rounded-lg bg-white shadow-sm border-gray-500">
+    <div {...rest} className="rounded-lg bg-white shadow-sm border-gray-500">
       {children}
     </div>
   );

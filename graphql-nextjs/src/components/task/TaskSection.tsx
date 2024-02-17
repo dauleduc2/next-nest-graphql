@@ -1,26 +1,26 @@
-import { Task } from "@/types/models/task";
-import { FunctionComponent } from "react";
-import TodoTask from "./Todo";
+import { useDroppable } from "@dnd-kit/core";
+import { FunctionComponent, PropsWithChildren } from "react";
 
-interface TaskSectionProps {
+interface TaskSectionProps extends PropsWithChildren {
   title: string;
-  tasks: Partial<Task>[];
-  onEdit?(id?: string): void;
+  id: string;
 }
 
 const TaskSection: FunctionComponent<TaskSectionProps> = ({
-  tasks,
   title,
-  onEdit,
+  children,
+  id,
 }) => {
+  const { isOver, setNodeRef } = useDroppable({
+    id: id,
+  });
+  const style = {
+    color: isOver ? "green" : undefined,
+  };
   return (
-    <div className="w-[400px]">
+    <div style={style} ref={setNodeRef} className="w-[400px] flex-1">
       <h1 className="text-xl font-bold">{title}</h1>
-      <div className="flex flex-col gap-5 mt-5">
-        {tasks?.map((task) => (
-          <TodoTask key={task.id} data={task} onEdit={onEdit} />
-        ))}
-      </div>
+      <div className="flex flex-col gap-5 mt-5">{children}</div>
     </div>
   );
 };
