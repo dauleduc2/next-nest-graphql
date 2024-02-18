@@ -6,8 +6,19 @@ import AddEditTaskModal, {
 } from "@/components/task/AddEditTask";
 import TaskSection from "@/components/task/TaskSection";
 import TodoTask from "@/components/task/Todo";
-import { useGetTasks } from "@/hooks/task";
-import { DndContext } from "@dnd-kit/core";
+import {
+  DRAGGABLE_SECTIONS,
+  TASK_SECTIONS_CONFIG,
+} from "@/constants/draggable";
+import { useGetTasks, useUpdateTask } from "@/hooks/task";
+import { Task, TaskSectionConfig } from "@/types/models/task";
+import {
+  DndContext,
+  DragEndEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 import { PlusIcon } from "@heroicons/react/24/solid";
 import { useMemo, useRef, useState } from "react";
 
@@ -16,8 +27,16 @@ export default function TasksPage() {
   const [modalMode, setModalMode] = useState<AddEditTaskModalMode>("ADD");
   const [editingId, setEditingId] = useState<string | undefined>();
   const { loading, error, data, refetch } = useGetTasks({
-    fields: ["id", "title", "description", "status"],
+    fields: ["id", "title", "description", "status", "date", "time"],
   });
+
+  const [updateTask] = useUpdateTask();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { delay: 100, distance: 10 },
+    })
+  );
 
   const todoTasks = useMemo(
     () => data?.tasks.filter((task) => task.status === "TODO") || [],
@@ -45,6 +64,22 @@ export default function TasksPage() {
     addTaskModalRef.current?.open();
   };
 
+  const onDragEnd = async (e: DragEndEvent) => {
+    const dragItem = e.active.data.current as Task;
+    let dragSection = e.over?.data.current as TaskSectionConfig;
+
+    if (dragItem.status === dragSection.status) return;
+
+    await updateTask({
+      variables: {
+        ...dragItem,
+        status: dragSection.status,
+      },
+    });
+
+    refetch();
+  };
+
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :(</p>;
 
@@ -60,19 +95,19 @@ export default function TasksPage() {
           Task
         </button>
       </div>
-      <DndContext>
+      <DndContext onDragEnd={onDragEnd} sensors={sensors}>
         <div className="flex cursor-pointer gap-5 flex-1 ">
-          <TaskSection title="To do" id="todo-draggable">
+          <TaskSection data={TASK_SECTIONS_CONFIG.TODO}>
             {todoTasks?.map((task) => (
               <TodoTask key={task.id} data={task} onEdit={openEditTaskModal} />
             ))}
           </TaskSection>
-          <TaskSection title="In Progress" id="in-progress-draggable">
+          <TaskSection data={TASK_SECTIONS_CONFIG.IN_PROGRESS}>
             {inProgressTasks?.map((task) => (
               <TodoTask key={task.id} data={task} onEdit={openEditTaskModal} />
             ))}
           </TaskSection>
-          <TaskSection title="Done" id="done-draggable">
+          <TaskSection data={TASK_SECTIONS_CONFIG.DONE}>
             {doneTasks?.map((task) => (
               <TodoTask key={task.id} data={task} onEdit={openEditTaskModal} />
             ))}

@@ -9,3 +9,13 @@ export type Task = BaseModel & {
   date: string;
   time: number;
 };
+
+export type TaskSectionConfig = {
+  sectionId: string;
+  title: string;
+  status: TaskStatus;
+};
+
+export type TaskSections = {
+  [key in TaskStatus]: TaskSectionConfig;
+};

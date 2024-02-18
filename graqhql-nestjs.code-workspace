@@ -1,16 +1,14 @@
 {
   "folders": [
-    {
-      "path": "graphql-nextjs"
-    },
-    {
-      "path": "."
-    },
-    {
-      "path": "graphql-nestjs"
-    }
-  ],
-  "settings": {
-    "cSpell.words": ["dicebear"]
-  }
+	{
+		"path": "."
+	},
+	{
+		"path": "graphql-nestjs"
+	},
+	{
+		"path": "graphql-nextjs"
+	}
+],
+  "settings": {}
 }
